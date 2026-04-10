@@ -1,21 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- 1. CORE ELEMENT REFERENCES ---
     const leadForm = document.getElementById('leadForm');
     const submitBtn = document.getElementById('submitBtn');
     const formSuccess = document.getElementById('formSuccess');
     const formError = document.getElementById('formError');
 
-    // Google Apps Script Web App URL
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp8vGsz_tXG8CwpAQr6wkYO1KdT5Q5iovzU_0hg91Maa06fLjc13UrqlpTnFkSsvis/exec';
 
-    // 1. FORM HANDLING
+    // --- 2. SMOOTH ACCORDION LOGIC ---
+    document.querySelectorAll('.faq-trigger').forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            const item = trigger.closest('.faq-item');
+            const icon = trigger.querySelector('i');
+            const isActive = item.classList.contains('active');
+
+            // Close all items
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.faq-trigger i').forEach(i => i.className = 'fas fa-plus');
+
+            // Toggle current if not previously active
+            if (!isActive) {
+                item.classList.add('active');
+                icon.className = 'fas fa-minus';
+            }
+        });
+    });
+
+    // --- 3. STAGGERED REVEAL SYSTEM ---
+    const revealCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                // Optional: stop observing once revealed
+                // observer.unobserve(entry.target);
+            }
+        });
+    };
+
+    const revealObserver = new IntersectionObserver(revealCallback, {
+        threshold: 0.15,
+        rootMargin: '0px 0px -40px 0px'
+    });
+
+    document.querySelectorAll('.reveal').forEach((el, index) => {
+        revealObserver.observe(el);
+    });
+
+    // --- 4. FORM SUBMISSION ---
     if (leadForm) {
         leadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             submitBtn.disabled = true;
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang kết nối...';
-            if (formError) formError.style.display = 'none';
+            const originalLabel = submitBtn.textContent;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> CONNECTING...';
 
             const formData = new FormData(leadForm);
             const params = new URLSearchParams();
@@ -27,112 +65,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
                     body: params.toString()
                 });
 
-                // Success Animation
-                leadForm.style.transition = 'opacity 0.5s ease';
+                // Transition to success
+                leadForm.style.transition = 'all 0.5s var(--ease-out-expo)';
                 leadForm.style.opacity = '0';
+                leadForm.style.transform = 'translateY(-20px)';
+                
                 setTimeout(() => {
                     leadForm.style.display = 'none';
-                    if (formSuccess) {
-                        formSuccess.style.display = 'block';
-                        formSuccess.style.opacity = '0';
-                        formSuccess.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            formSuccess.style.transition = 'all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                            formSuccess.style.opacity = '1';
-                            formSuccess.style.transform = 'translateY(0)';
-                        }, 50);
-                    }
+                    formSuccess.style.display = 'block';
+                    // Trigger inner success animations if needed
                 }, 500);
 
-            } catch (error) {
-                console.error('Submission error:', error);
+            } catch (err) {
+                console.error(err);
                 if (formError) {
-                    formError.textContent = 'Kết nối gián đoạn. Vui lòng thử lại hoặc nhắn tin Zalo.';
+                    formError.textContent = 'NETWORK ERROR. PLEASE MESSAGE ZALO.';
                     formError.style.display = 'block';
                 }
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                submitBtn.textContent = originalLabel;
             }
         });
     }
 
-    // 2. FAQ ACCORDION
-    const faqQuestions = document.querySelectorAll('.faq-question');
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', () => {
-            const answer = question.nextElementSibling;
-            const icon = question.querySelector('i');
-            const isOpen = question.classList.contains('open');
+    // --- 5. PARALLAX VISUALS ---
+    const bgGlows = document.querySelectorAll('.mesh-glow');
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        bgGlows.forEach((glow, i) => {
+            const speed = (i + 1) * 0.1;
+            glow.style.transform = `translateY(${scrolled * speed}px)`;
+        });
+    });
+
+    // Handle Parallax on Mouse (Desktop only)
+    if (window.innerWidth > 1024) {
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 50;
+            const y = (e.clientY / window.innerHeight - 0.5) * 50;
             
-            document.querySelectorAll('.faq-question').forEach(q => {
-                q.classList.remove('open');
-                q.querySelector('i').className = 'fas fa-chevron-down';
+            bgGlows.forEach((glow, i) => {
+                const multi = (i + 1) * 0.5;
+                glow.style.transform += ` translate(${x * multi}px, ${y * multi}px)`;
             });
-            document.querySelectorAll('.faq-answer').forEach(a => {
-                a.style.display = 'none';
-            });
-            
-            if (!isOpen) {
-                question.classList.add('open');
-                icon.className = 'fas fa-chevron-up';
-                answer.style.display = 'block';
-            }
         });
-    });
-
-    // 3. BACKGROUND PARALLAX
-    const blobs = document.querySelectorAll('.blob');
-    window.addEventListener('mousemove', (e) => {
-        const x = e.clientX / window.innerWidth;
-        const y = e.clientY / window.innerHeight;
-        
-        blobs.forEach((blob, index) => {
-            const speed = (index + 1) * 20;
-            const xOffset = (x - 0.5) * speed;
-            const yOffset = (y - 0.5) * speed;
-            blob.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-        });
-    });
-
-    // 4. SCROLL REVEAL (WOW FACTOR)
-    const observerOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('reveal-active');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    // Apply reveal classes
-    document.querySelectorAll('.rule-item, .pr-card, .bank-card, .faq-item, .hero-content, .hero-image-v2').forEach((item, index) => {
-        item.classList.add('reveal');
-        // Staggered delay logic
-        item.style.transitionDelay = `${(index % 3) * 0.1}s`;
-        observer.observe(item);
-    });
-
-    // Add required reveal styles dynamically to avoid layout shift before JS loads
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .reveal-active {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-        }
-    `;
-    document.head.appendChild(style);
+    }
 });
