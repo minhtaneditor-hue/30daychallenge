@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formMessage = document.getElementById('formMessage');
 
     // Replace this with your Google Apps Script Web App URL after deployment
-    const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp8vGsz_tXG8CwpAQr6wkYO1KdT5Q5iovzU_0hg91Maa06fLjc13UrqlpTnFkSsvis/exec';
 
     leadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
