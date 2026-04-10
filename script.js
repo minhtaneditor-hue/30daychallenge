@@ -55,17 +55,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const originalLabel = submitBtn.textContent;
             submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> CONNECTING...';
 
-            const formData = new FormData(leadForm);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData.entries()) {
-                params.append(key, value);
-            }
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
 
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: params.toString()
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
                 });
 
                 // Transition to success
