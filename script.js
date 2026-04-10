@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formSuccess = document.getElementById('formSuccess');
     const formError = document.getElementById('formError');
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwp8vGsz_tXG8CwpAQr6wkYO1KdT5Q5iovzU_0hg91Maa06fLjc13UrqlpTnFkSsvis/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiDoAZOqbUOV1iClo63CfttF1lnX81qDp2lTHruOXZyFf-e_jV0OZyk4K695f_fRwC/exec';
 
     // --- 2. SMOOTH ACCORDION LOGIC ---
     document.querySelectorAll('.faq-trigger').forEach(trigger => {
